@@ -249,20 +249,59 @@ func deleteNode(head *ListNode, val int) *ListNode {
 
 // 剑指 Offer 19. 正则表达式匹配
 func isMatch(s string, p string) bool {
-	for i, i2 := range p {
-		switch i2 {
-		case '.':
-			continue
-		case '*':
-
-		}
+	if p[0] == '.' || p[0] == s[0] {
+		// 相互匹配的时候，匹配下一个字符
+		return isMatch(s[1:], p[1:])
 	}
+	if p[0] == '*' {
+		// 如果匹配到*，则会有两种情况
+		// 忽略，继续下一个匹配
+		return isMatch(s, p[2:]) ||
+			isMatch(s[1:], p)
+	}
+
 	return false
 }
 
-// 剑指 Offer 20. 表示数值的字符串
-func isNumber(s string) bool {
+// 剑指 Offer 21. 调整数组顺序使奇数位于偶数前面
+func exchange(nums []int) []int {
+	head := 0
+	tail := len(nums) - 1
+	for head < tail {
 
+	}
+	return nums
+}
+
+// 剑指 Offer 22. 链表中倒数第k个节点
+func getKthFromEnd(head *ListNode, k int) *ListNode {
+	pre := head
+	next := pre
+	for i := 0; i < k; i++ {
+		next = next.Next
+	}
+	for next != nil {
+		pre = pre.Next
+		next = next.Next
+	}
+	return pre
+}
+
+// 剑指 Offer 24. 反转链表
+func reverseList(head *ListNode) *ListNode {
+	if head == nil {
+		return nil
+	}
+	pre := head
+	next := head.Next
+	head.Next = nil
+	for next != nil {
+		temp := next.Next
+		next.Next = pre
+		pre = next
+		next = temp
+	}
+	return pre
 }
 
 func main() {
