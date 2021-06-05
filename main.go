@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"fmt"
 	"math"
 	"strconv"
@@ -304,6 +305,122 @@ func reverseList(head *ListNode) *ListNode {
 	return pre
 }
 
+type TreeNode struct {
+	Val   int
+	Left  *TreeNode
+	Right *TreeNode
+}
+
+// 剑指 Offer 26. 树的子结构
+func isSubStructure(A *TreeNode, B *TreeNode) bool {
+	return true
+}
+
+// 剑指 Offer 27. 二叉树的镜像
+func mirrorTree(root *TreeNode) *TreeNode {
+	mirrorT(root)
+	return root
+}
+
+func mirrorT(root *TreeNode) {
+	if root.Left == nil && root.Right == nil {
+		return
+	}
+	// 交换紫薯
+	temp := root.Left
+	root.Left = root.Right
+	root.Right = temp
+	if root.Left != nil {
+		mirrorTree(root.Left)
+	}
+	if root.Right != nil {
+		mirrorTree(root.Right)
+	}
+}
+
+// 剑指 Offer 28. 对称的二叉树
+func isSymmetric(root *TreeNode) bool {
+	if root == nil {
+		return false
+	}
+	return isSym(root.Left, root.Right)
+}
+
+func isSym(right *TreeNode, left *TreeNode) bool {
+	if right == nil && left == nil {
+		return true
+	}
+	if left == nil || right == nil {
+		return false
+	}
+	if left.Val == right.Val {
+		return false
+	}
+	return isSym(right.Left, left.Right) && isSym(right.Right, left.Left)
+}
+
+// 剑指 Offer 29. 顺时针打印矩阵
+func spiralOrder(matrix [][]int) []int {
+	// 斜对角打印
+	result := make([]int, 0)
+	start := 0
+	for len(matrix) > start*2 && len(matrix[0]) > start*2 {
+		result = append(result, printCircle(matrix, start)...)
+		start++
+	}
+	return result
+}
+
+// 顺时针打印一个圈
+func printCircle(matrix [][]int, start int) (result []int) {
+	endR := len(matrix) - 1 - start
+	endC := len(matrix[0]) - 1 - start
+	// 从左到右打印一行
+	for i := start; i < endC; i++ {
+		result = append(result, matrix[start][i])
+	}
+	// 从上到下打印一列
+	for i := start; i < endR; i++ {
+		result = append(result, matrix[i][endC-start])
+	}
+	// 从右到左打印一行
+	for i := endC - start; i > start; i-- {
+		result = append(result, matrix[endR-start][i])
+	}
+	// 从下到上打印一列
+	for i := endR - start; i > start; i-- {
+		result = append(result, matrix[i][start])
+	}
+	return
+}
+
+// 剑指 Offer 32 - I. 从上到下打印二叉树
+func levelOrder(root *TreeNode) []int {
+	if root == nil {
+		return nil
+	}
+	result := make([]int, 0)
+	// 使用队列去解决
+	// 注意工程中不要自己去写一个简单的slice去代替，会造成内存泄露
+	queer := list.New()
+	queer.PushBack(root)
+	for queer.Len() != 0 {
+		if queer.Front().Value.(*TreeNode) != nil {
+			// 子元素入队
+			if queer.Front().Value.(*TreeNode).Left != nil {
+				queer.PushBack(queer.Front().Value.(*TreeNode).Left)
+			}
+			if queer.Front().Value.(*TreeNode).Right != nil {
+				queer.PushBack(queer.Front().Value.(*TreeNode).Right)
+			}
+		}
+		result = append(result, queer.Front().Value.(*TreeNode).Val)
+		// 出队
+		queer.Remove(queer.Front())
+	}
+	return result
+}
+
 func main() {
 	//arr := [][]byte{
 	//	{'C', 'A', 'A'},
@@ -319,7 +436,9 @@ func main() {
 
 	// print(myPow(2, 10))
 
-	fmt.Printf("%v", printNumbers(1))
+	fmt.Printf("%v", spiralOrder([][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))
+
+	// fmt.Printf("the tree is :%v\n", levelOrder())
 
 	// print(exist(arr, "AAB"))
 }
