@@ -421,6 +421,128 @@ func levelOrder(root *TreeNode) []int {
 	return result
 }
 
+// 之型打印二叉树
+func zhiLevelOrder(root *ListNode) [][]int {
+	if root == nil {
+		return nil
+	}
+	// 使用双向链表模拟堆栈or队列，两个装不同层的数据
+	// 奇数层从左往右
+	queer1 := list.New()
+	// 偶数层从右往左
+	queer2 := list.New()
+	temp := make([][]int, 0)
+	queer1.PushBack(root)
+	flag := true
+	for queer1.Len() != 0 || queer2.Len() != 0 {
+		result := make([]int, 0)
+		if flag {
+			// 从左往右打印当层
+			for queer1.Len() != 0 {
+				result = append(result, queer1.Back().Value.(*TreeNode).Val)
+				if queer1.Back().Value.(*TreeNode).Left != nil {
+					queer2.PushBack(queer1.Back().Value.(*TreeNode).Left)
+				}
+				if queer1.Back().Value.(*TreeNode).Right != nil {
+					queer2.PushBack(queer1.Back().Value.(*TreeNode).Right)
+				}
+				queer1.Remove(queer1.Back())
+			}
+		}
+		if !flag {
+			// 从右往左打印
+			for queer2.Len() != 0 {
+				result = append(result, queer2.Back().Value.(*TreeNode).Val)
+				if queer2.Back().Value.(*TreeNode).Right != nil {
+					queer1.PushBack(queer2.Back().Value.(*TreeNode).Right)
+				}
+				if queer2.Back().Value.(*TreeNode).Left != nil {
+					queer1.PushBack(queer2.Back().Value.(*TreeNode).Left)
+				}
+				queer2.Remove(queer2.Back())
+			}
+		}
+		flag = !flag
+		temp = append(temp, result)
+	}
+	return temp
+}
+
+// 剑指 Offer 33. 二叉搜索树的后序遍历序列
+func verifyPostorder(postorder []int) bool {
+	if postorder == nil || len(postorder) == 0 {
+		return true
+	}
+	// 根节点
+	root := postorder[len(postorder)-1]
+	// 左子树的值小于根节点
+	i := 0
+	for ; i < len(postorder)-1; i++ {
+		if postorder[i] > root {
+			break
+		}
+	}
+	// 右子树的值大于根节点，根据二叉搜索树的特性，末尾一定是根节点
+	// i，j双指针
+	j := i
+	for ; j < len(postorder)-1; j++ {
+		if postorder[j] < root {
+			return false
+		}
+	}
+	left := true
+	if i > 0 {
+		left = verifyPostorder(postorder[:i])
+	}
+	right := true
+	if i < len(postorder)-1 {
+		right = verifyPostorder(postorder[i:j])
+	}
+	return right && left
+}
+
+// 剑指 Offer 34. 二叉树中和为某一值的路径
+func pathSum(root *TreeNode, target int) [][]int {
+	if root == nil {
+		return nil
+	}
+	result := make([][]int, 0)
+	tmep := make([]int, 0)
+	FindPath(root, target, &tmep, &result)
+	return result
+}
+
+// FindPath 前序遍历
+func FindPath(root *TreeNode, target int, result *[]int, tmp *[][]int) {
+	if root == nil {
+		return
+	}
+	temp := append(*result, root.Val)
+	// 遍历到叶子节点
+	if root.Right == nil && root.Left == nil {
+		if target == root.Val {
+			result = &temp
+			//TODO 想办法保存路径
+			fmt.Println(result)
+			k := append(*tmp, *result)
+			tmp = &k
+			return
+		}
+		if target != root.Val {
+			return
+		}
+	}
+	result = &temp
+	FindPath(root.Left, target-root.Val, result, tmp)
+	FindPath(root.Right, target-root.Val, result, tmp)
+}
+
+// 剑指 Offer 38. 字符串的排列
+func permutation(s string) []string {
+	// result:=make([]string,0)
+	return nil
+}
+
 func main() {
 	//arr := [][]byte{
 	//	{'C', 'A', 'A'},
@@ -436,7 +558,37 @@ func main() {
 
 	// print(myPow(2, 10))
 
-	fmt.Printf("%v", spiralOrder([][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))
+	// fmt.Printf("%v", spiralOrder([][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))
+
+	// fmt.Printf("%v\n", verifyPostorder([]int{4, 8, 6, 12, 16, 14, 10}))
+	tree := TreeNode{
+		Val: 5,
+		Left: &TreeNode{
+			Val: 4,
+			Left: &TreeNode{
+				Val: 11,
+				Left: &TreeNode{
+					Val:   7,
+					Left:  nil,
+					Right: nil,
+				},
+				Right: &TreeNode{
+					Val: 2, Left: nil, Right: nil,
+				},
+			},
+			Right: nil,
+		},
+		Right: &TreeNode{
+			Val:   8,
+			Right: &TreeNode{Val: 13, Right: nil, Left: nil},
+			Left: &TreeNode{
+				Val:   4,
+				Right: &TreeNode{Val: 5, Right: nil, Left: nil},
+				Left:  &TreeNode{Val: 1, Right: nil, Left: nil},
+			},
+		},
+	}
+	fmt.Println(pathSum(&tree, 22))
 
 	// fmt.Printf("the tree is :%v\n", levelOrder())
 
