@@ -502,45 +502,282 @@ func verifyPostorder(postorder []int) bool {
 }
 
 // 剑指 Offer 34. 二叉树中和为某一值的路径
+var tmp []list.List
+
 func pathSum(root *TreeNode, target int) [][]int {
 	if root == nil {
 		return nil
 	}
-	result := make([][]int, 0)
-	tmep := make([]int, 0)
-	FindPath(root, target, &tmep, &result)
-	return result
+	result := list.New()
+	FindPath(root, target, result)
+	// fmt.Println(tmp)
+	return nil
 }
 
 // FindPath 前序遍历
-func FindPath(root *TreeNode, target int, result *[]int, tmp *[][]int) {
+func FindPath(root *TreeNode, target int, result *list.List) {
 	if root == nil {
 		return
 	}
-	temp := append(*result, root.Val)
+	result.PushBack(root.Val)
 	// 遍历到叶子节点
 	if root.Right == nil && root.Left == nil {
 		if target == root.Val {
-			result = &temp
 			//TODO 想办法保存路径
-			fmt.Println(result)
-			k := append(*tmp, *result)
-			tmp = &k
+			tmp = append(tmp, *result)
 			return
 		}
 		if target != root.Val {
 			return
 		}
 	}
-	result = &temp
-	FindPath(root.Left, target-root.Val, result, tmp)
-	FindPath(root.Right, target-root.Val, result, tmp)
+	FindPath(root.Left, target-root.Val, result)
+	FindPath(root.Right, target-root.Val, result)
+	result.Remove(result.Back())
+	return
 }
 
 // 剑指 Offer 38. 字符串的排列
+var res []string
+
 func permutation(s string) []string {
-	// result:=make([]string,0)
+	if s == "" {
+		return nil
+	}
+	sortS([]byte(s), 0)
+	// 去重
+	hm := make(map[string]bool)
+	p := make([]string, 0)
+	for _, i := range res {
+		if _, ok := hm[i]; !ok {
+			p = append(p, i)
+			hm[i] = true
+		}
+	}
+	return p
+}
+
+func sortS(s []byte, begin int) {
+	if begin == len(s)-1 {
+		fmt.Println(string(s))
+		res = append(res, string(s))
+		return
+	}
+	for i := begin; i < len(s); i++ {
+		temp := s[i]
+		// 交换
+		s[i] = s[begin]
+		s[begin] = temp
+
+		sortS(s, begin+1)
+
+		temp = s[i]
+		s[i] = s[begin]
+		s[begin] = temp
+	}
+	return
+}
+
+func majorityElement(nums []int) int {
+	m := make(map[int]int)
+	max := 0
+	result := 0
+	for _, num := range nums {
+		m[num]++
+		if max < m[num] {
+			max = m[num]
+			result = num
+		}
+	}
+	return result
+}
+
+func getLeastNumbers(arr []int, k int) []int {
+	// 快速选择算法
+	if k == 0 {
+		return []int{0}
+	}
+	if len(arr) < k {
+		return arr
+	}
 	return nil
+}
+
+func PartitionArray(arr []int, low int, high int, k int) {
+	// m := Partition(arr, low, high)
+	return
+}
+
+func Partition(arr []int, low int, high int) int {
+	// 快排分治
+	// 先随便选一个基准数
+	index := high
+	for i := 0; i < high; i++ {
+		if arr[i] < arr[index] {
+
+		}
+	}
+	return 0
+}
+
+func Swap(arr *[]int, i int, j int) {
+	return
+}
+
+// 剑指 Offer 42. 连续子数组的最大和
+func maxSubArray(nums []int) int {
+	if nums == nil {
+		return 0
+	}
+	// 简单动规
+	result := nums[0]
+	max := nums[0]
+	for i := 0; i < len(nums); i++ {
+		if result < 0 {
+			result = nums[i]
+			if result > max {
+				max = result
+			}
+		} else if i != 0 {
+			result += nums[i]
+			if result > max {
+				max = result
+			}
+		}
+	}
+	if result > max {
+		max = result
+	}
+	return max
+}
+
+// 剑指 Offer 43. 1～n 整数中 1 出现的次数
+func countDigitOne(n int) int {
+	result := 0
+	for i := 1; i <= n; i++ {
+		result += getOne(i)
+	}
+	return result
+}
+
+func getOne(n int) int {
+	result := 0
+	for n != 0 {
+		if n%10 == 1 {
+			result++
+		}
+		n /= 10
+	}
+	return result
+}
+
+// 剑指 Offer 45. 把数组排成最小的数
+func minNumber(nums []int) string {
+	result := ""
+	return result
+}
+
+// 最长回文字串
+func longestPalindrome(s string) string {
+	maxLength := 1
+	maxS := string(s[0])
+	for i := 0; i < len(s); i++ {
+		for j := i + 1; j <= len(s); j++ {
+			if isPalindrome(s[i:j]) && j-i+1 > maxLength {
+				maxS = s[i:j]
+				maxLength = j - i + 1
+			}
+		}
+	}
+	return maxS
+}
+
+func isPalindrome(s string) bool {
+	return func() bool {
+		i := 0
+		j := len(s) - 1
+		for i != j {
+			if i == j-1 {
+				return s[i] == s[j]
+			}
+			if s[i] == s[j] {
+				i++
+				j--
+				continue
+			}
+			return false
+		}
+		return true
+	}()
+}
+
+// 6. Z 字形变换
+func convert(s string, numRows int) string {
+	if numRows < 2 {
+		return s
+	}
+	result := make([]string, numRows)
+	flag := -1
+	i := 0
+	for _, s1 := range s {
+		result[i] += string(s1)
+		if i == 0 || i == numRows-1 {
+			// 遇到转折点，则反向-1
+			flag = -flag
+		}
+		i += flag
+	}
+	data := func() string {
+		temp := ""
+		for _, s2 := range result {
+			temp += s2
+		}
+		return temp
+	}()
+	return data
+}
+
+func reverse(x int) (t int) {
+	defer func() {
+		if t > 2147483647-1 || -t > 2147483647-1 {
+			t = 0
+		}
+		err := recover()
+		if err != nil {
+			t = 0
+			fmt.Println(err)
+		}
+	}()
+	result := func(x int, t int) int {
+		for x != 0 {
+			temp := x % 10
+			x /= 10
+			t = t*10 + temp
+		}
+		return t
+	}(x, t)
+	return result
+}
+
+func isPalindrome2(x int) bool {
+	result := 0
+	for x != 0 {
+		temp := x % 10
+		x /= 10
+		result = result*10 + temp
+		if result == x {
+			return true
+		}
+		if result > x {
+			result /= 10
+			return result == x
+		}
+	}
+	return false
+}
+
+func nextPermutation(nums []int) {
+
 }
 
 func main() {
@@ -561,34 +798,50 @@ func main() {
 	// fmt.Printf("%v", spiralOrder([][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))
 
 	// fmt.Printf("%v\n", verifyPostorder([]int{4, 8, 6, 12, 16, 14, 10}))
-	tree := TreeNode{
-		Val: 5,
-		Left: &TreeNode{
-			Val: 4,
-			Left: &TreeNode{
-				Val: 11,
-				Left: &TreeNode{
-					Val:   7,
-					Left:  nil,
-					Right: nil,
-				},
-				Right: &TreeNode{
-					Val: 2, Left: nil, Right: nil,
-				},
-			},
-			Right: nil,
-		},
-		Right: &TreeNode{
-			Val:   8,
-			Right: &TreeNode{Val: 13, Right: nil, Left: nil},
-			Left: &TreeNode{
-				Val:   4,
-				Right: &TreeNode{Val: 5, Right: nil, Left: nil},
-				Left:  &TreeNode{Val: 1, Right: nil, Left: nil},
-			},
-		},
-	}
-	fmt.Println(pathSum(&tree, 22))
+	//tree := TreeNode{
+	//	Val: 5,
+	//	Left: &TreeNode{
+	//		Val: 4,
+	//		Left: &TreeNode{
+	//			Val: 11,
+	//			Left: &TreeNode{
+	//				Val:   7,
+	//				Left:  nil,
+	//				Right: nil,
+	//			},
+	//			Right: &TreeNode{
+	//				Val: 2, Left: nil, Right: nil,
+	//			},
+	//		},
+	//		Right: nil,
+	//	},
+	//	Right: &TreeNode{
+	//		Val:   8,
+	//		Right: &TreeNode{Val: 13, Right: nil, Left: nil},
+	//		Left: &TreeNode{
+	//			Val:   4,
+	//			Right: &TreeNode{Val: 1, Right: nil, Left: nil},
+	//			Left:  &TreeNode{Val: 5, Right: nil, Left: nil},
+	//		},
+	//	},
+	//}
+	//fmt.Println(pathSum(&tree, 22))
+	//
+	//fmt.Println(permutation("aab"))
+
+	// fmt.Println(majorityElement([]int{}))
+
+	// fmt.Println(maxSubArray([]int{-1, 0, -2}))
+
+	// fmt.Println(countDigitOne(12))
+
+	// fmt.Println(isPalindrome("bab"))
+
+	// fmt.Println(convert("PAYPALISHIRING", 3))
+
+	//fmt.Println(reverse(1534236469))
+
+	fmt.Println(isPalindrome2(88888))
 
 	// fmt.Printf("the tree is :%v\n", levelOrder())
 
