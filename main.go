@@ -776,8 +776,145 @@ func isPalindrome2(x int) bool {
 	return false
 }
 
+// 11. 盛最多水的容器，移动的过程中不断消去不可能成为最大值的情况
+func maxArea(height []int) int {
+	i := 0
+	j := len(height) - 1
+	res1 := 0
+	for i < j {
+		if height[i] < height[j] {
+			res1 = int(math.Max(float64(res1), float64(height[i]*(j-i))))
+			i += 1
+			continue
+		}
+		res1 = int(math.Max(float64(res1), float64(height[j]*(j-i))))
+		j -= 1
+	}
+	return res1
+}
+
+// 31. 下一个排列
 func nextPermutation(nums []int) {
 
+}
+
+// 26. 删除有序数组中的重复项，切入点：数组有序
+func removeDuplicates(nums []int) int {
+	if len(nums) == 0 {
+		return 0
+	}
+	if len(nums) == 1 {
+		return 1
+	}
+	i := 0
+	j := i + 1
+	for j < len(nums) {
+		if nums[i] != nums[j] {
+			t := nums[i+1]
+			nums[i+1] = nums[j]
+			nums[j] = t
+			i++
+		}
+		j++
+	}
+	return i
+}
+
+func removeElement(nums []int, val int) int {
+	if len(nums) == 0 {
+		return 0
+	}
+	if len(nums) == 1 && nums[0] == val {
+		return 0
+	}
+	i := 0
+	j := i
+	for j < len(nums) {
+		if nums[j] != val {
+			t := nums[i]
+			nums[i] = nums[j]
+			nums[j] = t
+			i++
+		}
+		j++
+	}
+	return i
+}
+
+func strStr(haystack string, needle string) int {
+	if needle == "" {
+		return 0
+	}
+	if haystack == "" {
+		return -1
+	}
+	i := 0
+	j := 0
+	for i < len(haystack) && j < len(needle) {
+		if haystack[i] == needle[j] {
+			j++
+			i++
+		} else {
+			i -= j
+			i++
+			j = 0
+		}
+	}
+	if j == len(needle) {
+		return i - len(needle)
+	}
+	return -1
+}
+
+func divide(dividend int, divisor int) int {
+	if dividend == 0 {
+		return 0
+	}
+	// 都转成正数运算
+	flag := func() int {
+		// 除数与被除数异号
+		if (dividend < 0 && divisor > 0) || (dividend > 0 && divisor < 0) {
+			return -1
+		}
+		return 1
+	}()
+	a := func() int {
+		if dividend < 0 {
+			return 0 - dividend
+		}
+		return dividend
+	}()
+	b := func() int {
+		if divisor < 0 {
+			return -divisor
+		}
+		return divisor
+	}()
+	result := div(a, b)
+	if result >= int(math.Pow(float64(2), float64(31))) && flag > 0 {
+		result = int(math.Pow(float64(2), float64(31))) - 1
+	}
+	if flag > 0 {
+		// 判断是不是大于32位有符号整数
+		return result
+	}
+	return -result
+}
+
+// 翻倍
+func div(dividend int, divisor int) int {
+	if dividend < divisor {
+		return 0
+	}
+	count := 1
+	temp := divisor
+	for temp+temp <= dividend {
+		// 商翻倍
+		count += count
+		// 除数也翻倍
+		temp += temp
+	}
+	return count + div(dividend-temp, divisor)
 }
 
 func main() {
@@ -841,7 +978,13 @@ func main() {
 
 	//fmt.Println(reverse(1534236469))
 
-	fmt.Println(isPalindrome2(88888))
+	// fmt.Println(isPalindrome2(88888))
+
+	// fmt.Println(maxArea([]int{1, 8, 6, 2, 5, 4, 8, 3, 7}))
+
+	// fmt.Println(removeElement([]int{0, 1, 2, 2, 3, 0, 4, 2}, 2))
+
+	fmt.Println(divide(-2147483648, 1))
 
 	// fmt.Printf("the tree is :%v\n", levelOrder())
 
