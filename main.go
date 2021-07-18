@@ -793,9 +793,41 @@ func maxArea(height []int) int {
 	return res1
 }
 
-// 31. 下一个排列
 func nextPermutation(nums []int) {
+	if len(nums) == 1 || len(nums) == 0 {
+		return
+	}
+	// 第一遍扫描，找到“较小数”，较小数需要尽量靠右
+	little := func() int {
+		i := len(nums) - 1
+		for nums[i] <= nums[i-1] && i-1 > 0 {
+			i--
+		}
+		return i - 1
+	}()
+	big := func() int {
+		i := len(nums) - 1
+		for nums[i] <= nums[little] && i > little {
+			i--
+		}
+		return i
+	}()
+	if little == 0 && big == 0 {
+		reverser(nums)
+		return
+	}
+	temp := nums[little]
+	nums[little] = nums[big]
+	nums[big] = temp
+	reverser(nums[little+1:])
+}
 
+// 反转数组
+func reverser(a []int) {
+	// 双指针
+	for i, n := 0, len(a); i < n/2; i++ {
+		a[i], a[n-1-i] = a[n-1-i], a[i]
+	}
 }
 
 // 26. 删除有序数组中的重复项，切入点：数组有序
@@ -917,6 +949,196 @@ func div(dividend int, divisor int) int {
 	return count + div(dividend-temp, divisor)
 }
 
+// 33 搜索旋转排序数组
+func search(nums []int, target int) int {
+	if len(nums) == 1 && nums[0] != target {
+		return -1
+	}
+	if len(nums) == 1 && nums[0] == target {
+		return nums[0]
+	}
+	// 变形的二分
+	low, heigh := 0, len(nums)-1
+	for low+1 != heigh {
+		mid := (low + heigh) / 2
+		// 如果左边有序，并且target在内
+		if nums[mid] > nums[low] && nums[low] <= target && nums[mid] >= target {
+			heigh = mid
+			continue
+		}
+		// 左边有序，但target不在内
+		if nums[mid] > nums[low] && !(nums[low] <= target && nums[mid] >= target) {
+			low = mid
+			continue
+		}
+		// 如果右边有序，并且target在内
+		if nums[mid] < nums[heigh] && nums[mid] <= target && nums[heigh] >= target {
+			low = mid
+			continue
+		}
+		// 右边有序，但target不在内
+		if nums[mid] < nums[heigh] && !(nums[mid] <= target && nums[heigh] >= target) {
+			heigh = mid
+			continue
+		}
+	}
+	if nums[heigh] != target && nums[low] != target {
+		return -1
+	}
+	if nums[heigh] == target {
+		return heigh
+	}
+	return low
+}
+
+// 34. 在排序数组中查找元素的第一个和最后一个位置，进阶让时间复杂度为logn
+func searchRange(nums []int, target int) []int {
+	if len(nums) == 0 {
+		return []int{-1, -1}
+	}
+	i, j := len(nums)-1, 0
+	for key, num := range nums {
+		if num == target && i >= key {
+			i = key
+		}
+		if num == target && j <= key {
+			j = key
+		}
+	}
+	if i == len(nums)-1 && j == 0 && nums[0] != target {
+		return []int{-1, -1}
+	}
+	return []int{i, j}
+}
+
+// 35. 搜索插入位置
+func searchInsert(nums []int, target int) int {
+	low, heigh := 0, len(nums)-1
+	result := len(nums)
+	for low <= heigh {
+		mid := (low + heigh) / 2
+		if target <= nums[mid] {
+			result = mid
+			heigh = mid - 1
+			continue
+		}
+		low = mid + 1
+	}
+	return result
+}
+
+// 39. 组合总和，类似决策树
+func combinationSum(candidates []int, target int) (result [][]int) {
+	// 深搜
+	var temp []int
+	var dfs func(target int, index int)
+	dfs = func(target int, index int) {
+		// 当candidate数组用完
+		if index == len(candidates) {
+			return
+		}
+		// 将该次的组合加入结果中 回溯关键
+		if target == 0 {
+			result = append(result, append([]int(nil), temp...))
+			return
+		}
+		// 不用当前的这个数
+		dfs(target, index+1)
+		// 使用当前数，但必须要求加上当前数后，target为正
+		if target-candidates[index] >= 0 {
+			// 加入到临时数组
+			temp = append(temp, candidates[index])
+			dfs(target-candidates[index], index)
+			// dfs后，需要弹出最后一个元素
+			temp = temp[:len(temp)-1]
+		}
+	}
+	dfs(target, 0)
+	return
+}
+
+// 40. 组合总和 II，要求每个数字在组合中只能使用一次
+func combinationSum2(candidates []int, target int) [][]int {
+	return nil
+}
+
+// 43. 字符串相乘
+func multiply(num1 string, num2 string) (res string) {
+	if num1 == "0" || num2 == "0" {
+		return "0"
+	}
+	// 定义字符串加法
+	var add func(n string, m string) (result string)
+	add = func(n string, m string) (result string) {
+		if n == "" {
+			return m
+		}
+		//ad存储进位
+		i, j, ad := len(n)-1, len(m)-1, 0
+		for i >= 0 || j >= 0 || ad != 0 {
+			a, b := 0, 0
+			if i >= 0 {
+				a = int(n[i] - '0')
+			}
+			if j >= 0 {
+				b = int(m[j] - '0')
+			}
+			temp := a + b + ad
+			result = strconv.Itoa(temp%10) + result
+			ad = temp / 10
+			i--
+			j--
+		}
+		return
+	}
+	// 遍历乘数
+	for i := len(num2) - 1; i >= 0; i-- {
+		manyZero := func(t int) string {
+			result := ""
+			for t < len(num2)-1 {
+				result += "0"
+				t++
+			}
+			return result
+		}(i)
+		noZere := func() (result string) {
+			for j := 0; j < int(num2[i]-'0'); j++ {
+				// 相加n次
+				result = add(result, num1)
+			}
+			return
+		}()
+		all := noZere + manyZero
+		res = add(res, all)
+	}
+	return
+}
+
+// 46. 全排列
+func permute(nums []int) [][]int {
+	// 回溯，排列，组合都用这个
+	return nil
+}
+
+// 45. 跳跃游戏 II
+func jump(nums []int) int {
+	// 典型贪心
+	addr := len(nums) - 1
+	result := 0
+	for addr > 0 {
+		mini := addr
+		// 找到最远能跳到当前step的位置
+		for i := addr; i >= 0; i-- {
+			if nums[i]+i >= addr && i <= mini {
+				mini = i
+			}
+		}
+		addr = mini
+		result++
+	}
+	return result
+}
+
 func main() {
 	//arr := [][]byte{
 	//	{'C', 'A', 'A'},
@@ -984,7 +1206,17 @@ func main() {
 
 	// fmt.Println(removeElement([]int{0, 1, 2, 2, 3, 0, 4, 2}, 2))
 
-	fmt.Println(divide(-2147483648, 1))
+	// fmt.Println(divide(-2147483648, 1))
+
+	//nums := []int{1, 2, 3}
+	//nextPermutation(nums)
+	//fmt.Println(nums)
+
+	// fmt.Println(search([]int{4, 5, 6, 7, 0, 1, 2}, 1))
+
+	// fmt.Println(multiply("9", "9"))
+
+	fmt.Println(jump([]int{2, 3, 1, 1, 4}))
 
 	// fmt.Printf("the tree is :%v\n", levelOrder())
 
