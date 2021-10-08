@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 )
 
@@ -33,7 +34,6 @@ func exist(board [][]byte, word string) bool {
 			}
 		}
 	}
-
 	return false
 }
 
@@ -1115,9 +1115,111 @@ func multiply(num1 string, num2 string) (res string) {
 }
 
 // 46. 全排列
-func permute(nums []int) [][]int {
-	// 回溯，排列，组合都用这个
-	return nil
+func permute(nums []int) (result [][]int) {
+	// 回溯，排列，组合都用这
+	// 标记数组
+	vis := make(map[int]bool)
+	isUse := func(num int, target map[int]bool) bool {
+		_, ok := target[num]
+		return ok
+	}
+	var backtrack func(output []int)
+	backtrack = func(output []int) {
+		if len(output) == len(nums) {
+			result = append(result, append([]int{}, output...))
+			return
+		}
+		for _, num := range nums {
+			// 没有用过该数字
+			if !isUse(num, vis) {
+				output = append(output, num)
+				vis[num] = true
+				// 填入下一个元素
+				backtrack(output)
+				// 回溯后记得弹出原来的这个元素
+				output = output[:len(output)-1]
+				delete(vis, num)
+			}
+		}
+	}
+	backtrack([]int{})
+	return
+}
+
+// 47. 全排列 II
+func permuteUnique(nums []int) (result [][]int) {
+	sort.Ints(nums)
+	// 相比于普通的全排列，回溯的基础上，加上去重
+	// 使用栈，模拟连续填入，因为回出现121这种情况，所以不能用map去做了
+	vis := make([]bool, len(nums))
+	var backtrack func(output []int)
+	backtrack = func(output []int) {
+		if len(output) == len(nums) {
+			result = append(result, append([]int{}, output...))
+			return
+		}
+		for i, num := range nums {
+			// 没有用过该数字且不能出现重复的排列
+			if !(vis[i] || i > 0 && !vis[i-1] && num == nums[i-1]) {
+				output = append(output, num)
+				vis[i] = true
+				// 填入下一个元素
+				backtrack(output)
+				// 回溯后记得弹出原来的这个元素
+				output = output[:len(output)-1]
+				vis[i] = false
+			}
+		}
+	}
+	backtrack([]int{})
+	return
+}
+
+// 48. 旋转图像
+func rotate(matrix [][]int) {
+	// 翻转的本质可以转为，左上右下对角线反转后，左右翻转一次
+	for i, ints := range matrix {
+		for i2, i3 := range ints {
+			matrix[i][i2] = matrix[i2][i]
+			matrix[i2][i] = i3
+		}
+	}
+
+	//for i, ints := range matrix {
+	//
+	//}
+}
+
+// 50. Pow(x, n) 快速幂
+func myPow2(x float64, n int) float64 {
+	if n == 0 {
+		return 1
+	}
+	if n == 1 {
+		return x
+	}
+	var quickPow func(i float64, k int) float64
+	quickPow = func(i float64, k int) float64 {
+		if k == 0 {
+			return 1
+		}
+		y := quickPow(i, k/2)
+		if k%2 == 0 {
+			return y * y
+		}
+		return y * y * i
+	}
+	result := quickPow(x, int(math.Abs(float64(n))))
+	if n < 0 {
+		return 1.0 / result
+	}
+	return result
+}
+
+// 56. 合并区间
+func merge(intervals [][]int) (result [][]int) {
+
+	return
 }
 
 // 45. 跳跃游戏 II
@@ -1139,7 +1241,232 @@ func jump(nums []int) int {
 	return result
 }
 
+// 94. 二叉树的中序遍历
+func inorderTraversal(root *TreeNode) (result []int) {
+	var inorder func(root *TreeNode)
+	inorder = func(root *TreeNode) {
+		if root == nil {
+			return
+		}
+		inorder(root.Left)
+		result = append(result, root.Val)
+		inorder(root.Right)
+	}
+	inorder(root)
+	return
+}
+
+// 92. 反转链表 II
+func reverseBetween(head *ListNode, left int, right int) *ListNode {
+	// 哨兵
+	fNode := &ListNode{Val: -1}
+	fNode.Next = head
+	// left预留多一位
+	leftNode := func(left int) *ListNode {
+		temp := fNode
+		for i := 0; i < left-1; i++ {
+			temp = temp.Next
+		}
+		return temp
+	}
+	rightNode := func(right int) *ListNode {
+		temp := fNode
+		for i := 0; i < right; i++ {
+			temp = temp.Next
+		}
+		return temp
+	}
+	var change func(head *ListNode, left *ListNode, right *ListNode)
+	change = func(head *ListNode, left *ListNode, right *ListNode) {
+		// 切断链表
+		leftN := left.Next
+		temp := right.Next
+		left.Next = nil
+		right.Next = nil
+
+		var pre *ListNode
+		cur := leftN
+		for cur != nil {
+			next := cur.Next
+			cur.Next = pre
+			pre = cur
+			cur = next
+		}
+		// 接回去
+		left.Next = right
+		leftN.Next = temp
+	}
+	change(fNode, leftNode(left), rightNode(right))
+	return fNode.Next
+}
+
+// 88. 合并两个有序数组
+func merge2(nums1 []int, m int, nums2 []int, n int) {
+	result := make([]int, 0, m+n)
+	for i, j := 0, 0; ; {
+		if i == m {
+			// 把第二个数组的元素都加到第一个中去
+			result = append(result, nums2[j:]...)
+			break
+		}
+		if j == n {
+			result = append(result, nums1[i:]...)
+			break
+		}
+		if nums1[i] < nums2[j] {
+			result = append(result, nums1[i])
+			i++
+		} else {
+			// 插入到nums1的i
+			result = append(result, nums2[j])
+			j++
+		}
+	}
+	copy(nums1, result)
+	return
+}
+
+func arraysToList(nums []int, head *ListNode) *ListNode {
+	fnode := head
+	for _, num := range nums {
+		temp := ListNode{Val: num}
+		head.Next = &temp
+		head = &temp
+	}
+	return fnode.Next
+}
+
+func GetEndPoint(order string) []int {
+	if order == "" {
+		return []int{0, 0}
+	}
+	x := 0
+	y := 0
+	step := 0
+	for i := 0; i <= len(order)-1; i++ {
+		if order[i] <= '9' && order[i] >= '0' {
+			if step != 0 {
+				step = step*10 + int(order[i]-'0')
+			} else {
+				step += int(order[i] - '0')
+			}
+		}
+		switch order[i] {
+		case 'W':
+			if step <= 0 {
+				step = 1
+			}
+			y += step
+			step = 0
+		case 'S':
+			if step <= 0 {
+				step = 1
+			}
+			y -= step
+			step = 0
+		case 'A':
+			if step <= 0 {
+				step = 1
+			}
+			x -= step
+			step = 0
+		case 'D':
+			if step <= 0 {
+				step = 1
+			}
+			x += step
+			step = 0
+		default:
+			continue
+		}
+	}
+	return []int{x, y}
+	// write code here
+}
+
+func getValue(rowIndex int, columnIndex int) int {
+	rowIndex--
+	columnIndex--
+	x := func() int {
+		result := 1
+		for i := 0; i < columnIndex; i++ {
+			result = result * (rowIndex - i)
+		}
+		return result
+	}()
+	y := func() int {
+		t := 1
+		for i := columnIndex; i > 0; i-- {
+			t *= i
+		}
+		return t
+	}()
+	return x / y
+	// write code here
+}
+
+func findMinOverrideSubString(source string, target string) string {
+	i := 0
+	j := 0
+	begin := len(source) - 1
+	end := len(source) - 1
+	for i <= len(source)-1 && j <= len(target)-1 {
+		if source[i] == target[j] {
+			if begin >= i {
+				begin = i
+			}
+			if j == len(target)-1 {
+				end = i
+			}
+			j++
+		}
+		i++
+	}
+	if j != len(target) {
+		return ""
+	}
+	return source[begin : end+1]
+	// write code here
+}
+
+func zipString(s string) (result string) {
+	count := 0
+	front := ""
+	for _, i := range s {
+		tp := string(i)
+		if count == 0 {
+			count++
+			front = tp
+			continue
+		}
+		if tp == front && count != 0 {
+			count++
+		}
+		if tp != front {
+			if count == 1 {
+				result += front
+			} else {
+				result += strconv.Itoa(count) + front
+			}
+			front = tp
+			count = 1
+		}
+	}
+	if count == 1 {
+		result += front
+	} else {
+		result += strconv.Itoa(count) + front
+	}
+	return
+}
+
 func main() {
+	// fmt.Println(getValue(3, 2))
+
+	// fmt.Println(findMinOverrideSubString("abcd","bc"))
+
+	// fmt.Println(GetEndPoint("W2D"))
+
 	//arr := [][]byte{
 	//	{'C', 'A', 'A'},
 	//	{'A', 'A', 'A'},
@@ -1216,9 +1543,19 @@ func main() {
 
 	// fmt.Println(multiply("9", "9"))
 
-	fmt.Println(jump([]int{2, 3, 1, 1, 4}))
+	// fmt.Println(jump([]int{2, 3, 1, 1, 4}))
 
 	// fmt.Printf("the tree is :%v\n", levelOrder())
 
 	// print(exist(arr, "AAB"))
+
+	// fmt.Println(permuteUnique([]int{1, 1, 2}))
+
+	// fmt.Println(myPow2(2, 10))
+
+	// reverseBetween(arraysToList([]int{3, 5}, new(ListNode)), 1, 2)
+
+	// println(merge([][]int{[]int{1, 2, 3, 0, 0, 0}, []int{2, 5, 6}}))
+
+	println(fmt.Sprintf("%s", zipString("xxxrrrasdasxxx")))
 }
