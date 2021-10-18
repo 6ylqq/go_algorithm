@@ -1178,16 +1178,57 @@ func permuteUnique(nums []int) (result [][]int) {
 // 48. 旋转图像
 func rotate(matrix [][]int) {
 	// 翻转的本质可以转为，左上右下对角线反转后，左右翻转一次
-	for i, ints := range matrix {
-		for i2, i3 := range ints {
-			matrix[i][i2] = matrix[i2][i]
-			matrix[i2][i] = i3
+	for i, row := range matrix {
+		for j, num := range row {
+			if j == i {
+				break
+			}
+			matrix[i][j] = matrix[j][i]
+			matrix[j][i] = num
 		}
 	}
+	for _, ints := range matrix {
+		for k := 0; k <= (len(ints)-1)/2; k++ {
+			temp := ints[k]
+			ints[k] = ints[(len(ints)-1)-k]
+			ints[(len(ints)-1)-k] = temp
+		}
+	}
+	return
+}
 
-	//for i, ints := range matrix {
-	//
-	//}
+// 15. 三数之和
+func threeSum(nums []int) (result [][]int) {
+	if nums == nil || len(nums) == 0 {
+		return
+	}
+	if len(nums) == 3 {
+		if nums[0]+nums[1]+nums[2] == 0 {
+			result = append(result, nums)
+			return
+		}
+	}
+	sort.Ints(nums)
+	for i := 0; i < len(nums)-2; i++ {
+		for j := i + 1; j < len(nums)-1; j++ {
+			for k := j + 1; k < len(nums); k++ {
+				if nums[i]+nums[j]+nums[k] == 0 {
+					result = append(result, []int{nums[i], nums[j], nums[k]})
+				}
+			}
+		}
+	}
+	// 去重
+	m := make(map[string]bool)
+	var t = make([][]int, 0)
+	for _, ints := range result {
+		if _, ok := m[fmt.Sprintf("%v", ints)]; !ok {
+			t = append(t, ints)
+			m[fmt.Sprintf("%v", ints)] = true
+		}
+	}
+	result = t
+	return
 }
 
 // 50. Pow(x, n) 快速幂
@@ -1460,7 +1501,101 @@ func zipString(s string) (result string) {
 	return
 }
 
+// 70. 爬楼梯
+func climbStairs(n int) int {
+	var rec func(m int) int
+	rec = func(m int) int {
+		if m == 1 {
+			return 1
+		}
+		if m == 2 {
+			return 2
+		}
+		return rec(m-1) + rec(m-2)
+	}
+	return rec(n)
+}
+
+// 102. 二叉树的层序遍历
+func levelOrder2(root *TreeNode) (result [][]int) {
+	if root == nil {
+		return result
+	}
+	queue := make([]*TreeNode, 0)
+	queue = append(queue, root)
+	for i := 0; len(queue) > 0; i++ {
+		p := func() (res []int) {
+			for _, node := range queue {
+				res = append(res, node.Val)
+			}
+			return
+		}()
+		result = append(result, p)
+		tmp := make([]*TreeNode, 0)
+		for _, node := range queue {
+			if node.Left != nil {
+				tmp = append(tmp, node.Left)
+			}
+			if node.Right != nil {
+				tmp = append(tmp, node.Right)
+			}
+		}
+		queue = tmp
+	}
+	return
+}
+
+// 3. 无重复字符的最长子串
+func lengthOfLongestSubstring(s string) int {
+	if s == "" {
+		return 0
+	}
+	m := make(map[uint8]int)
+	m[s[0]] = 1
+	i, j := 0, 0
+	flag := func(mm map[uint8]int) bool {
+		for _, i2 := range mm {
+			if i2 > 1 {
+				return true
+			}
+		}
+		return false
+	}
+	for i < len(s)-1 && j < len(s)-1 {
+		j++
+		m[s[j]]++
+		if flag(m) {
+			// 如果重复，窗口向前移动
+			m[s[i]]--
+			i++
+		}
+	}
+	return j - i + 1
+}
+
+// 53. 最大子序和
+func maxSubArray2(nums []int) int {
+	max := nums[0]
+	pre := nums[0]
+	for index, num := range nums {
+		if index == 0 {
+			continue
+		}
+		if pre >= 0 {
+			pre += num
+		} else {
+			pre = num
+		}
+		max = int(math.Max(float64(pre), float64(max)))
+	}
+	return max
+}
+
 func main() {
+	fmt.Println(lengthOfLongestSubstring(" "))
+
+	//fmt.Println(climbStairs(4))
+
 	// fmt.Println(getValue(3, 2))
 
 	// fmt.Println(findMinOverrideSubString("abcd","bc"))
@@ -1557,5 +1692,7 @@ func main() {
 
 	// println(merge([][]int{[]int{1, 2, 3, 0, 0, 0}, []int{2, 5, 6}}))
 
-	println(fmt.Sprintf("%s", zipString("xxxrrrasdasxxx")))
+	// println(fmt.Sprintf("%s", zipString("xxxrrrasdasxxx")))
+
+	// fmt.Println(threeSum([]int{0, 0, 0, 0}))
 }
