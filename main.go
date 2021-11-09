@@ -1591,8 +1591,220 @@ func maxSubArray2(nums []int) int {
 	return max
 }
 
+// 160. 相交链表
+func getIntersectionNode(headA, headB *ListNode) *ListNode {
+	//m := make(map[*ListNode]bool)
+	//for point := headA; point != nil; point = point.Next {
+	//	m[point] = true
+	//}
+	//for point := headB; point != nil; point = point.Next {
+	//	if _, ok := m[point]; ok {
+	//		return point
+	//	}
+	//}
+	//return nil
+
+	// 双指针优化
+	if headA == nil || headB == nil {
+		return nil
+	}
+	pa := headA
+	pb := headB
+	for {
+		if pa == pb {
+			return pa
+		}
+		if pa == nil && pb == nil {
+			return nil
+		}
+		if pb != nil && pa != nil {
+			pb = pb.Next
+			pa = pa.Next
+			continue
+		}
+		if pa == nil {
+			pa = headB
+		}
+		if pb == nil {
+			pb = headA
+		}
+	}
+}
+
+// 21. 合并两个有序链表
+func mergeTwoLists(l1 *ListNode, l2 *ListNode) *ListNode {
+	p := &ListNode{Val: -1}
+	pre := p
+	n := l1
+	m := l2
+	for {
+		if n == nil {
+			pre.Next = m
+			break
+		}
+		if m == nil {
+			pre.Next = n
+			break
+		}
+		if n.Val < m.Val {
+			pre.Next = n
+			n = n.Next
+			pre = pre.Next
+		} else {
+			pre.Next = m
+			m = m.Next
+			pre = pre.Next
+		}
+	}
+	return p.Next
+}
+
+func addStrings(num1 string, num2 string) (r string) {
+	i := len(num1) - 1
+	j := len(num2) - 1
+	up := 0
+	for i >= 0 || j >= 0 || up != 0 {
+		var x, y int
+		if i >= 0 {
+			x = int(num1[i] - '0')
+		}
+		if j >= 0 {
+			y = int(num2[j] - '0')
+		}
+		result := x + y + up
+		r = strconv.Itoa(result%10) + r
+		up = result / 10
+		i--
+		j--
+	}
+	return
+}
+
+// 19. 删除链表的倒数第 N 个结点
+func removeNthFromEnd(head *ListNode, n int) *ListNode {
+	p := &ListNode{Val: -1}
+	p.Next = head
+	pre := p.Next
+	for i := 0; i < n; i++ {
+		pre = pre.Next
+	}
+	cur := p
+	for pre != nil {
+		cur = cur.Next
+		pre = pre.Next
+	}
+	cur.Next = cur.Next.Next
+	return p.Next
+}
+
+// 215. 数组中的第K个最大元素
+func findKthLargest(nums []int, k int) int {
+	sort.Ints(nums)
+	return nums[len(nums)-k]
+}
+
+// 54. 螺旋矩阵
+func spiralOrder2(matrix [][]int) (result []int) {
+	// 按圈循环
+	for i := 0; i < int(math.Min(float64(len(matrix)), float64(len(matrix[0]))))-2; i++ {
+		for n, m := i, i; ; {
+			for m < len(matrix)-1-i {
+				result = append(result, matrix[n][m])
+				m++
+			}
+			for n < len(matrix[0])-1-i {
+				result = append(result, matrix[n][m])
+				n++
+			}
+			for m > i {
+				result = append(result, matrix[n][m])
+				m--
+			}
+			for n > i {
+				result = append(result, matrix[n][m])
+				n--
+			}
+			if n == i && m == i {
+				break
+			}
+		}
+	}
+	return
+}
+
+func findBall(nums []int) (result []int) {
+	// write code here
+	m := make(map[int]int)
+	for _, num := range nums {
+		m[num]++
+	}
+	for i, j := range m {
+		if j >= len(nums)/4 {
+			result = append(result, i)
+		}
+	}
+	sort.Ints(result)
+	return
+}
+
+func convert2(input []int) (result int) {
+	// write code here
+	for i, num := range input {
+		if num != 0 {
+			result += int(math.Pow(float64(2), float64(len(input)-i-1)))
+		}
+	}
+	return
+}
+
+func checkPartitioning(data string) bool {
+	var s = []byte(data)
+	// write code here
+	if s == nil {
+		return false
+	}
+	i := 0
+	j := len(s) - 1
+	for i != j && i+1 != j {
+		if isHuiwen(s[:i+1]) && isHuiwen(s[i+1:j]) && isHuiwen(s[j:]) {
+			return true
+		}
+		j--
+	}
+	i = 0
+	j = len(s) - 1
+	for i != j && i+1 != j {
+		if isHuiwen(s[:i+1]) && isHuiwen(s[i+1:j]) && isHuiwen(s[j:]) {
+			return true
+		}
+		i++
+	}
+	return false
+}
+
+func isHuiwen(s []byte) bool {
+	i := 0
+	j := len(s) - 1
+	for i != j && i+1 != j {
+		if s[i] != s[j] {
+			return false
+		}
+		i++
+		j--
+	}
+	return s[i] == s[j]
+}
+
 func main() {
-	fmt.Println(lengthOfLongestSubstring(" "))
+	// fmt.Println(findBall([]int{1, 2, 1, 3, 2, 3, 1, 1, 4, 6, 3, 2, 3, 4, 2}))
+
+	// fmt.Println(checkPartitioning([]byte{'b', 'b', 'b'}))
+
+	// fmt.Println(convert2([]int{1, 0, 0, 1}))
+
+	// fmt.Printf("%v", spiralOrder2([][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))
+
+	// fmt.Println(lengthOfLongestSubstring(" "))
 
 	//fmt.Println(climbStairs(4))
 
