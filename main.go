@@ -6,6 +6,7 @@ import (
 	"math"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // 旋转数组中的最小的数字
@@ -361,6 +362,9 @@ func isSym(right *TreeNode, left *TreeNode) bool {
 
 // 剑指 Offer 29. 顺时针打印矩阵
 func spiralOrder(matrix [][]int) []int {
+	if len(matrix) == 0 || len(matrix[0]) == 0 {
+		return []int{}
+	}
 	// 斜对角打印
 	result := make([]int, 0)
 	start := 0
@@ -376,11 +380,11 @@ func printCircle(matrix [][]int, start int) (result []int) {
 	endR := len(matrix) - 1 - start
 	endC := len(matrix[0]) - 1 - start
 	// 从左到右打印一行
-	for i := start; i < endC; i++ {
+	for i := start; i <= endC; i++ {
 		result = append(result, matrix[start][i])
 	}
 	// 从上到下打印一列
-	for i := start; i < endR; i++ {
+	for i := start + 1; i < endR; i++ {
 		result = append(result, matrix[i][endC-start])
 	}
 	// 从右到左打印一行
@@ -1199,35 +1203,7 @@ func rotate(matrix [][]int) {
 
 // 15. 三数之和
 func threeSum(nums []int) (result [][]int) {
-	if nums == nil || len(nums) == 0 {
-		return
-	}
-	if len(nums) == 3 {
-		if nums[0]+nums[1]+nums[2] == 0 {
-			result = append(result, nums)
-			return
-		}
-	}
-	sort.Ints(nums)
-	for i := 0; i < len(nums)-2; i++ {
-		for j := i + 1; j < len(nums)-1; j++ {
-			for k := j + 1; k < len(nums); k++ {
-				if nums[i]+nums[j]+nums[k] == 0 {
-					result = append(result, []int{nums[i], nums[j], nums[k]})
-				}
-			}
-		}
-	}
-	// 去重
-	m := make(map[string]bool)
-	var t = make([][]int, 0)
-	for _, ints := range result {
-		if _, ok := m[fmt.Sprintf("%v", ints)]; !ok {
-			t = append(t, ints)
-			m[fmt.Sprintf("%v", ints)] = true
-		}
-	}
-	result = t
+
 	return
 }
 
@@ -1261,6 +1237,19 @@ func myPow2(x float64, n int) float64 {
 func merge(intervals [][]int) (result [][]int) {
 
 	return
+}
+
+func find1(s string) string {
+	m := make(map[int32]int)
+	max := 0
+	var maxByte int32
+	for _, i := range s {
+		m[i]++
+		if m[i] > max {
+			maxByte = i
+		}
+	}
+	return string(maxByte)
 }
 
 // 45. 跳跃游戏 II
@@ -1703,35 +1692,6 @@ func findKthLargest(nums []int, k int) int {
 	return nums[len(nums)-k]
 }
 
-// 54. 螺旋矩阵
-func spiralOrder2(matrix [][]int) (result []int) {
-	// 按圈循环
-	for i := 0; i < int(math.Min(float64(len(matrix)), float64(len(matrix[0]))))-2; i++ {
-		for n, m := i, i; ; {
-			for m < len(matrix)-1-i {
-				result = append(result, matrix[n][m])
-				m++
-			}
-			for n < len(matrix[0])-1-i {
-				result = append(result, matrix[n][m])
-				n++
-			}
-			for m > i {
-				result = append(result, matrix[n][m])
-				m--
-			}
-			for n > i {
-				result = append(result, matrix[n][m])
-				n--
-			}
-			if n == i && m == i {
-				break
-			}
-		}
-	}
-	return
-}
-
 func findBall(nums []int) (result []int) {
 	// write code here
 	m := make(map[int]int)
@@ -1795,14 +1755,179 @@ func isHuiwen(s []byte) bool {
 	return s[i] == s[j]
 }
 
+// 20. 有效的括号
+func isValid(s string) bool {
+	if len(s)%2 != 0 {
+		return false
+	}
+	pairs := map[byte]byte{
+		')': '(',
+		']': '[',
+		'}': '{',
+	}
+	var stack []byte
+	for i := 0; i < len(s); i++ {
+		if pairs[s[i]] > 0 {
+			// 若栈顶元素不匹配，或者栈无元素可以匹配，则返回false
+			if len(stack) == 0 || stack[len(stack)-1] != pairs[s[i]] {
+				return false
+			}
+			// 模拟出栈的过程
+			stack = stack[:len(stack)-1]
+		} else {
+			// 左括号入栈
+			stack = append(stack, s[i])
+		}
+	}
+	return len(stack) == 0
+}
+
+// 2. 两数相加
+func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
+	p, n := l1, l2
+	pNode := &ListNode{Val: -1}
+	pre := pNode
+	flag := 0
+	for p != nil || n != nil {
+		if p == nil {
+			p = &ListNode{Val: 0}
+		}
+		if n == nil {
+			n = &ListNode{Val: 0}
+		}
+		sum := p.Val + n.Val + flag
+		temp := &ListNode{Val: sum % 10}
+		flag = sum / 10
+		pre.Next = temp
+		pre = pre.Next
+		p = p.Next
+		n = n.Next
+	}
+	// 如果最后进位依然存在
+	if flag != 0 {
+		t := &ListNode{Val: flag}
+		pre.Next = t
+	}
+	return pNode.Next
+}
+
+func count(s string) {
+	m := map[string]int{}
+	temp := ""
+	for _, num := range s {
+		if num <= 'z' && num >= 'A' {
+			temp += string(num)
+		} else {
+			// 遇到标点空格等清空temp
+			temp = strings.ToLower(temp)
+			if temp == "" {
+				continue
+			}
+			m[temp] += 1
+			if m[temp] > 30 {
+				fmt.Println(temp)
+			}
+			temp = ""
+		}
+	}
+	var keys []int
+	result := make(map[int]string)
+	for key := range m {
+		keys = append(keys, m[key])
+		result[m[key]] = key
+	}
+	sort.Ints(keys)
+	for _, key := range keys {
+		fmt.Println("key:", result[key], "value", key)
+	}
+	return
+}
+
+// 字符串转换整数
+func myAtoi(s string) (result int) {
+	abs, sign, i, n := 0, 1, 0, len(s)
+	//丢弃无用的前导空格
+	for i < n && s[i] == ' ' {
+		i++
+	}
+	//标记正负号
+	if i < n {
+		if s[i] == '-' {
+			sign = -1
+			i++
+		} else if s[i] == '+' {
+			sign = 1
+			i++
+		}
+	}
+	for i < n && s[i] >= '0' && s[i] <= '9' {
+		abs = 10*abs + int(s[i]-'0')  //前导0去除
+		if sign*abs < math.MinInt32 { //整数超过 32 位有符号整数范围
+			return math.MinInt32
+		} else if sign*abs > math.MaxInt32 {
+			return math.MaxInt32
+		}
+		i++
+	}
+	return sign * abs
+}
+
+// 82. 删除排序链表中的重复元素 II
+func deleteDuplicates(head *ListNode) *ListNode {
+	pNode := &ListNode{Val: -1}
+	pNode.Next = head
+	pre := pNode
+	cur := pre.Next
+	for cur != nil {
+		temp := cur.Next
+		flag := false
+		for ; temp != nil && temp.Val == cur.Val; temp = temp.Next {
+			// 寻找重复的次数
+			flag = true
+		}
+		if flag {
+			cur = temp
+			pre.Next = cur
+		} else {
+			pre = cur
+			cur = cur.Next
+		}
+	}
+	return pNode.Next
+}
+
+func twoSum(nums []int, target int) (result []int) {
+	m := make(map[int]int)
+	for i, num := range nums {
+		t := target - num
+		if val, ok := m[t]; ok {
+			if i != val {
+				return []int{i, val}
+			}
+		} else {
+			m[num] = i
+		}
+	}
+	return
+}
+
 func main() {
+
+	fmt.Println(twoSum([]int{3, 2, 4}, 6))
+
+	// fmt.Println(count("'Shopee Pte Ltd is a Singaporean multinational technology company which focuses mainly on e-commerce. Headquartered under Sea Group (previously known as Garena), Shopee was first launched in Singapore in 2015, and later expanded its reach to Malaysia, Thailand, Taiwan, Indonesia, Vietnam, the Philippines, Brazil, Mexico and Cambodia. It currently serves consumers in Southeast and East Asia, as well as several countries in Latin America, such as Brazil and Mexico, who want to purchase and sell their goods online as of 2021. Shopee was called one of the \"5 disruptive ecommerce startups we saw in 2015\" by Tech In Asia for its technical advancement and mass scale, thanks to the mobile and social elements integrated into the model.'"))
+	//count("Shopee Pte Ltd is a Singaporean multinational technology company which focuses mainly on e-commerce. Headquartered under Sea Group (previously known as Garena), Shopee was first launched in Singapore in 2015, and later expanded its reach to Malaysia, Thailand, Taiwan, Indonesia, Vietnam, the Philippines, Brazil, Mexico and Cambodia. It currently serves consumers in Southeast and East Asia, as well as several countries in Latin America, such as Brazil and Mexico, who want to purchase and sell their goods online as of 2021. Shopee was called one of the 5 disruptive ecommerce startups we saw in 2015 by Tech In Asia for its technical advancement and mass scale, thanks to the mobile and social elements integrated into the model.")
+	//{
+
+	// fmt.Println(isValid("]"))
+
 	// fmt.Println(findBall([]int{1, 2, 1, 3, 2, 3, 1, 1, 4, 6, 3, 2, 3, 4, 2}))
 
 	// fmt.Println(checkPartitioning([]byte{'b', 'b', 'b'}))
 
 	// fmt.Println(convert2([]int{1, 0, 0, 1}))
 
-	// fmt.Printf("%v", spiralOrder2([][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))
+	// fmt.Printf("%v", spiralOrder([][]int{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}}))
 
 	// fmt.Println(lengthOfLongestSubstring(" "))
 
