@@ -1911,9 +1911,69 @@ func twoSum(nums []int, target int) (result []int) {
 	return
 }
 
+// 141. 环形链表
+func hasCycle(head *ListNode) bool {
+	if head == nil || head.Next == nil {
+		return false
+	}
+	first := head
+	sec := first.Next
+	for sec != nil && sec.Next != nil {
+		if first == sec {
+			return true
+		}
+		first = first.Next
+		sec = sec.Next.Next
+	}
+	return false
+}
+
+// 322. 零钱兑换
+func coinChange(coins []int, amount int) int {
+	dp := make([]int, amount+1)
+	for i, _ := range dp {
+		dp[i] = amount + 1
+	}
+	dp[0] = 0
+	for i := 1; i <= amount; i++ {
+		for j := 0; j < len(coins); j++ {
+			if coins[j] <= i {
+				dp[i] = int(math.Min(float64(dp[i]), float64(dp[i-coins[j]])+1))
+			}
+		}
+	}
+	if dp[amount] > amount {
+		return -1
+	}
+	return dp[amount]
+}
+
+func reserveString() (result string) {
+	m := make([]string, 0)
+	temp := ""
+	v := ""
+	for {
+		fmt.Scanln(&v)
+		if string(v) == " " {
+			m = append(m, temp)
+			temp = ""
+		}
+		temp += string(v)
+		m = append(m, temp)
+		for i := len(m) - 1; i >= 0; i-- {
+			result += m[i] + " "
+		}
+		return
+	}
+}
+
 func main() {
 
-	fmt.Println(twoSum([]int{3, 2, 4}, 6))
+	fmt.Println(reserveString())
+
+	// fmt.Println(coinChange([]int{1, 2, 5}, 11))
+
+	// fmt.Println(twoSum([]int{3, 2, 4}, 6))
 
 	// fmt.Println(count("'Shopee Pte Ltd is a Singaporean multinational technology company which focuses mainly on e-commerce. Headquartered under Sea Group (previously known as Garena), Shopee was first launched in Singapore in 2015, and later expanded its reach to Malaysia, Thailand, Taiwan, Indonesia, Vietnam, the Philippines, Brazil, Mexico and Cambodia. It currently serves consumers in Southeast and East Asia, as well as several countries in Latin America, such as Brazil and Mexico, who want to purchase and sell their goods online as of 2021. Shopee was called one of the \"5 disruptive ecommerce startups we saw in 2015\" by Tech In Asia for its technical advancement and mass scale, thanks to the mobile and social elements integrated into the model.'"))
 	//count("Shopee Pte Ltd is a Singaporean multinational technology company which focuses mainly on e-commerce. Headquartered under Sea Group (previously known as Garena), Shopee was first launched in Singapore in 2015, and later expanded its reach to Malaysia, Thailand, Taiwan, Indonesia, Vietnam, the Philippines, Brazil, Mexico and Cambodia. It currently serves consumers in Southeast and East Asia, as well as several countries in Latin America, such as Brazil and Mexico, who want to purchase and sell their goods online as of 2021. Shopee was called one of the 5 disruptive ecommerce startups we saw in 2015 by Tech In Asia for its technical advancement and mass scale, thanks to the mobile and social elements integrated into the model.")
